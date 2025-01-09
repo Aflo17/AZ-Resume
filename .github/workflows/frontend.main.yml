@@ -1,34 +1,45 @@
-name: Deploy_Frontend
-## Deploys when push is made from Frontend folder
+name: Deploy to Azure
 
 on:
-    push:
-        branches: [ main ]
-        paths:
-          - 'Frontend/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'Frontend/**'
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURERESUMESEC_CREDS }}
 
-    - name: Upload to blob storage
-      uses: azure/CLI@v1
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
       with:
-        inlineScript: |
-            az storage blob upload-batch --account-name getresumecounter178 --auth-mode key -d '$web' -s frontend/
+        node-version: '14'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build project
+      run: npm run build
+
+    - name: Deploy to Azure
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: your-app-name
+        slot-name: production
+        publish-profile: ${{ secrets.AZURE_CREDENTIALS }}
+
     - name: Purge CDN endpoint
       uses: azure/CLI@v1
       with:
         inlineScript: |
            az cdn endpoint purge --content-paths  "/*" --profile-name "AzResume" --name "AzResume" --resource-group "getresumecounter178"
 
-  # Azure logout
     - name: logout
       run: |
-            az logout
+        az logout
       if: always()
