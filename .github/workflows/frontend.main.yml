@@ -15,13 +15,13 @@ jobs:
 
       - uses: azure/login@v1
         with:
-          creds: ${{ secrets.test }}
+          creds: ${{ secrets.AZURERESUMESEC_CREDS }}
 
       - name: Upload to blob storage
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            az storage blob upload-batch --account-name getresumecounter178 --auth-mode key -d '$web' -s Frontend/
+            az storage blob upload-batch --account-name getresumecounter178 --auth-mode key -d '$web' -s frontend/
 
       - name: Purge CDN endpoint
         uses: azure/CLI@v1
